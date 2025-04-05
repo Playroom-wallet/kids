@@ -4,7 +4,7 @@ import { useState } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Check, Clock } from "lucide-react"
+import { Check, Clock, ArrowDownToLine } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Task {
@@ -44,6 +44,7 @@ export default function TasksPage() {
   ])
 
   const [bearMood, setBearMood] = useState<"normal" | "happy">("normal")
+  const [isWithdrawing, setIsWithdrawing] = useState(false)
 
   const markAsComplete = (id: string) => {
     setTasks(tasks.map((task) => (task.id === id ? { ...task, status: "completed" } : task)))
@@ -57,43 +58,59 @@ export default function TasksPage() {
 
   const claimReward = (id: string) => {
     setTasks(tasks.map((task) => (task.id === id ? { ...task, status: "claimed" } : task)))
+
+    // Make the bear happy when a reward is claimed
+    setBearMood("happy")
+    setTimeout(() => {
+      setBearMood("normal")
+    }, 3000)
+  }
+
+  const handleWithdraw = () => {
+    setIsWithdrawing(true)
+    setBearMood("happy")
+
+    setTimeout(() => {
+      setIsWithdrawing(false)
+      setBearMood("normal")
+    }, 2000)
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
       {/* Main content */}
-      <div className="flex-1 p-4">
-        <div className="bg-white/80 rounded-3xl p-4 mb-4">
-          <h1 className="text-3xl font-bold text-center text-primary mb-2">My Tasks</h1>
-          <p className="text-center mb-4">Complete tasks to earn rewards!</p>
+      <div className="flex-1 p-4 overflow-y-auto pb-20">
+        <div className="bg-white/80 rounded-3xl p-4">
+          <h1 className="text-2xl font-bold text-center text-primary mb-1">My Tasks</h1>
+          <p className="text-center text-sm mb-3">Complete tasks to earn rewards!</p>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {tasks.map((task) => (
               <div
                 key={task.id}
                 className={cn(
-                  "border-2 border-primary rounded-xl p-4",
+                  "border-2 border-primary rounded-xl p-3",
                   task.status === "completed" && "bg-yellow-100",
                   task.status === "approved" && "bg-green-100",
                   task.status === "claimed" && "bg-gray-100",
                 )}
               >
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-bold">{task.title}</h3>
-                  <span className="text-xl font-bold text-secondary">${task.reward}</span>
+                  <h3 className="text-lg font-bold">{task.title}</h3>
+                  <span className="text-lg font-bold text-secondary">${task.reward}</span>
                 </div>
 
-                <div className="mt-2 flex justify-between items-center">
+                <div className="mt-1 flex justify-between items-center">
                   <div className="flex items-center">
-                    {task.status === "pending" && <Clock className="w-5 h-5 text-yellow-500 mr-2" />}
+                    {task.status === "pending" && <Clock className="w-4 h-4 text-yellow-500 mr-1" />}
                     {(task.status === "completed" || task.status === "approved" || task.status === "claimed") && (
-                      <Check className="w-5 h-5 text-success mr-2" />
+                      <Check className="w-4 h-4 text-success mr-1" />
                     )}
-                    <span className="capitalize">{task.status === "pending" ? "To do" : task.status}</span>
+                    <span className="capitalize text-sm">{task.status === "pending" ? "To do" : task.status}</span>
                   </div>
 
                   {task.status === "pending" && (
-                    <Button onClick={() => markAsComplete(task.id)} className="rounded-full">
+                    <Button onClick={() => markAsComplete(task.id)} className="rounded-full h-8 text-sm px-3">
                       Mark Complete
                     </Button>
                   )}
@@ -101,7 +118,7 @@ export default function TasksPage() {
                   {task.status === "approved" && (
                     <Button
                       onClick={() => claimReward(task.id)}
-                      className="rounded-full bg-success hover:bg-success/90"
+                      className="rounded-full h-8 text-sm px-3 bg-success hover:bg-success/90"
                     >
                       Claim Reward
                     </Button>
@@ -110,29 +127,39 @@ export default function TasksPage() {
               </div>
             ))}
           </div>
+
+          {/* Withdraw Button */}
+          <div className="mt-6 flex justify-center">
+            <Button
+              onClick={handleWithdraw}
+              className="rounded-full bg-accent hover:bg-accent/90 px-6 py-2 h-auto"
+              disabled={isWithdrawing}
+            >
+              <ArrowDownToLine className="w-4 h-4 mr-2" />
+              {isWithdrawing ? "Processing..." : "Withdraw to Bank"}
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Bear Animation (hidden but used for state) */}
-      <div className={cn("fixed top-0 left-0 -z-10", bearMood === "happy" && "bear-happy")}>
-        <Image
-          src={bearMood === "happy" ? "/images/bear-happy.png" : "/images/bear.png"}
-          alt="Cute bear"
-          width={1}
-          height={1}
-          className="opacity-0"
-        />
-      </div>
+      {/* Happy Bear Animation (visible when claiming rewards or completing tasks) */}
+      {bearMood === "happy" && (
+        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
+          <div className="bear-happy">
+            <Image src="/images/happy-bear.png" alt="Happy bear" width={150} height={150} className="opacity-90" />
+          </div>
+        </div>
+      )}
 
       {/* Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white h-20 flex justify-around items-center px-4 rounded-t-3xl shadow-lg">
+      <div className="bg-white h-16 flex justify-around items-center px-4 rounded-t-3xl shadow-lg">
         <button className="nav-item" onClick={() => router.push("/home")}>
-          <Image src="/images/homeicon2.png" alt="Home" width={40} height={40} className="nav-icon" />
+          <Image src="/images/homeicon2.png" alt="Home" width={32} height={32} className="nav-icon" />
           <span className="nav-text">Home</span>
         </button>
 
         <button className="nav-item active" onClick={() => {}}>
-          <Image src="/images/taskicon2.png" alt="Tasks" width={40} height={40} className="nav-icon" />
+          <Image src="/images/taskicon2.png" alt="Tasks" width={32} height={32} className="nav-icon" />
           <span className="nav-text">Tasks</span>
         </button>
       </div>

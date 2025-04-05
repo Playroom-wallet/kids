@@ -1,14 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Check, Clock, ArrowDownToLine, X } from "lucide-react"
+import { Check, Clock, ArrowDownToLine, X, Copy, CheckCircle2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { v4 } from "uuid"
 import { countries, getUniversalLink, SelfAppBuilder } from "@selfxyz/core"
 import SelfQRcodeWrapper from '@selfxyz/qrcode';
+import { deployed_url } from "@/url_config"
 
 interface Task {
   id: string
@@ -49,7 +50,9 @@ export default function TasksPage() {
   const [bearMood, setBearMood] = useState<"normal" | "happy">("normal")
   const [isWithdrawing, setIsWithdrawing] = useState(false)
   const [showVerification, setShowVerification] = useState(false)
+  const [showPrivateKey, setShowPrivateKey] = useState(false)
   const [userId] = useState(v4())
+  const [copied, setCopied] = useState(false)
 
   const markAsComplete = (id: string) => {
     setTasks(tasks.map((task) => (task.id === id ? { ...task, status: "completed" } : task)))
@@ -80,27 +83,42 @@ export default function TasksPage() {
     // Close the verification popup
     setShowVerification(false)
 
-    // Show withdrawal processing
-    setIsWithdrawing(true)
-
     // Make bear happy during withdrawal
     setBearMood("happy")
 
     // Simulate withdrawal process
-    setTimeout(() => {
-      setIsWithdrawing(false)
-      setBearMood("normal")
-
-      // Show success message or redirect
-      alert("Withdrawal successful! Funds will be transferred to your bank account.")
-    }, 2000)
+    setShowPrivateKey(true)
   }
+
+  const closePrivateKeyModal = () => {
+    setShowPrivateKey(false)
+    setBearMood("normal")
+  }
+
+  const privateKeyRef = useRef<HTMLDivElement>(null);
+
+  const copyToClipboard = () => {
+    if (privateKeyRef.current) {
+      const range = document.createRange();
+      range.selectNode(privateKeyRef.current);
+      window.getSelection()?.removeAllRanges();
+      window.getSelection()?.addRange(range);
+      document.execCommand('copy');
+      window.getSelection()?.removeAllRanges();
+      setCopied(true);
+      
+      // Reset copied state after 2 seconds
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    }
+  };
 
   // Create Self app for verification
   const selfApp = new SelfAppBuilder({
     appName: "Playroom Withdraw",
     scope: "playroom-withdraw",
-    endpoint: "https://d4a2-111-235-226-130.ngrok-free.app/api/verifyself/",
+    endpoint: `${deployed_url}/api/verifyself/`,
     logoBase64: "https://pluspng.com/img-png/images-owls-png-hd-owl-free-download-png-png-image-485.png",
     userId: userId,
     disclosures: {
@@ -210,6 +228,50 @@ export default function TasksPage() {
                 Scan with your Self app or click the button above to verify your identity.
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+            {/* Private Key Modal */}
+            {showPrivateKey && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-primary">Your Private Key</h2>
+              <button onClick={closePrivateKeyModal} className="p-1 rounded-full hover:bg-gray-100">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-sm mb-4">
+              Here's your private key to claim your ownership. Make sure to save it in a
+              secure location.
+            </p>
+
+            <div className="relative">
+              <div 
+                ref={privateKeyRef}
+                className="w-full p-3 pr-10 bg-gray-100 rounded-xl text-xs font-mono overflow-x-auto select-all"
+              >
+                0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f
+              </div>
+              <button
+                onClick={copyToClipboard}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-gray-200"
+              >
+                {copied ? (
+                  <CheckCircle2 className="w-5 h-5 text-success" />
+                ) : (
+                  <Copy className="w-5 h-5 text-gray-500" />
+                )}
+              </button>
+            </div>
+
+            {copied && <p className="text-xs text-success mt-2 text-center">Private key copied to clipboard!</p>}
+
+            <Button onClick={closePrivateKeyModal} className="w-full rounded-full bg-primary mt-4">
+              Done
+            </Button>
           </div>
         </div>
       )}

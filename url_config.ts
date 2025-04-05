@@ -1,0 +1,1 @@
+export const deployed_url = `https://455c-111-235-226-130.ngrok-free.app`

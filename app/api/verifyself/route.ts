@@ -1,3 +1,4 @@
+import { deployed_url } from '@/url_config';
 import { countries, SelfBackendVerifier } from '@selfxyz/core';
 import { NextResponse } from 'next/server';
 
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
 
         const configuredVerifier = new SelfBackendVerifier(
             "playroom-withdraw",
-            'https://d4a2-111-235-226-130.ngrok-free.app/api/verifyself',
+            `${deployed_url}/api/verifyself`,
             'uuid',
             true,
         ).setMinimumAge(18).excludeCountries(countries.FRANCE);

@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #d1f1ff;
+  --foreground: #3a2449;
+  --primary: #8a56ac;
+  --primary-foreground: #ffffff;
+  --secondary: #ffd166;
+  --secondary-foreground: #3a2449;
+  --accent: #ef767a;
+  --accent-foreground: #ffffff;
+  --success: #6bb77b;
+  --success-foreground: #ffffff;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: "Bubblegum Sans", sans-serif;
+  padding-bottom: 5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.bear-container {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.bear-happy {
+  animation: bounce 0.5s ease-in-out;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px) scale(1.1);
+  }
+}
+
+.task-complete {
+  background-color: rgba(107, 183, 123, 0.2);
+}
+
+.nav-item {
+  @apply flex flex-col items-center justify-center p-1 rounded-lg;
+  width: 40%;
+}
+
+.nav-item.active {
+  @apply bg-primary/10;
+}
+
+.nav-icon {
+  @apply w-10 h-10 md:w-12 md:h-12;
+}
+
+.nav-text {
+  @apply text-base md:text-xl mt-1 font-bold;
+}
+

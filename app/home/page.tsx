@@ -64,14 +64,14 @@ export default function HomePage() {
       </div>
 
       {/* Navigation */}
-      <div className="bg-white h-16 flex justify-around items-center px-4 rounded-t-3xl shadow-lg">
+      <div className="bg-white  flex justify-around items-center px-4 rounded-t-3xl shadow-lg">
         <button className="nav-item active" onClick={() => {}}>
-          <Image src="/images/homeicon2.png" alt="Home" width={32} height={32} className="nav-icon" />
+          <Image src="/images/homeicon2.png" alt="Home" width={24} height={24} className="nav-icon" />
           <span className="nav-text">Home</span>
         </button>
 
         <button className="nav-item" onClick={() => router.push("/tasks")}>
-          <Image src="/images/taskicon2.png" alt="Tasks" width={32} height={32} className="nav-icon" />
+          <Image src="/images/taskicon2.png" alt="Tasks" width={24} height={24} className="nav-icon" />
           <span className="nav-text">Tasks</span>
         </button>
       </div>

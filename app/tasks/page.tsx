@@ -22,13 +22,13 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: "1",
-      title: "Help mom cook",
+      title: "Clean your room",
       reward: 5,
       status: "pending",
     },
     {
       id: "2",
-      title: "Clean your room",
+      title: "Help mom cook",
       reward: 3,
       status: "completed",
     },
@@ -173,7 +173,7 @@ export default function TasksPage() {
               disabled={isWithdrawing}
             >
               <ArrowDownToLine className="w-4 h-4 mr-2" />
-              {isWithdrawing ? "Processing..." : "Withdraw to Bank"}
+              {isWithdrawing ? "Processing..." : "Withdraw"}
             </Button>
           </div>
         </div>
@@ -190,7 +190,7 @@ export default function TasksPage() {
               </button>
             </div>
 
-            <p className="text-sm mb-4">Please verify you are 18 or older to withdraw funds to your bank account.</p>
+            <p className="text-sm mb-4">Please verify you are 18 or older to withdraw funds.</p>
 
             <div className="flex flex-col items-center">
               <div className="bg-gray-100 p-4 rounded-xl mb-4">
@@ -224,14 +224,14 @@ export default function TasksPage() {
       )}
 
       {/* Navigation */}
-      <div className="bg-white h-16 flex justify-around items-center px-4 rounded-t-3xl shadow-lg">
+      <div className="bg-white flex justify-around items-center px-4 rounded-t-3xl shadow-lg">
         <button className="nav-item" onClick={() => router.push("/home")}>
-          <Image src="/images/homeicon2.png" alt="Home" width={32} height={32} className="nav-icon" />
+          <Image src="/images/homeicon2.png" alt="Home" width={24} height={24} className="nav-icon" />
           <span className="nav-text">Home</span>
         </button>
 
         <button className="nav-item active" onClick={() => {}}>
-          <Image src="/images/taskicon2.png" alt="Tasks" width={32} height={32} className="nav-icon" />
+          <Image src="/images/taskicon2.png" alt="Tasks" width={24} height={24} className="nav-icon" />
           <span className="nav-text">Tasks</span>
         </button>
       </div>

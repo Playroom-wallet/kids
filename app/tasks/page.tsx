@@ -4,8 +4,11 @@ import { useState } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Check, Clock, ArrowDownToLine } from "lucide-react"
+import { Check, Clock, ArrowDownToLine, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { v4 } from "uuid"
+import { countries, getUniversalLink, SelfAppBuilder } from "@selfxyz/core"
+import SelfQRcodeWrapper from '@selfxyz/qrcode';
 
 interface Task {
   id: string
@@ -45,6 +48,8 @@ export default function TasksPage() {
 
   const [bearMood, setBearMood] = useState<"normal" | "happy">("normal")
   const [isWithdrawing, setIsWithdrawing] = useState(false)
+  const [showVerification, setShowVerification] = useState(false)
+  const [userId] = useState(v4())
 
   const markAsComplete = (id: string) => {
     setTasks(tasks.map((task) => (task.id === id ? { ...task, status: "completed" } : task)))
@@ -67,14 +72,46 @@ export default function TasksPage() {
   }
 
   const handleWithdraw = () => {
+    // Show verification popup
+    setShowVerification(true)
+  }
+
+  const handleVerificationSuccess = () => {
+    // Close the verification popup
+    setShowVerification(false)
+
+    // Show withdrawal processing
     setIsWithdrawing(true)
+
+    // Make bear happy during withdrawal
     setBearMood("happy")
 
+    // Simulate withdrawal process
     setTimeout(() => {
       setIsWithdrawing(false)
       setBearMood("normal")
+
+      // Show success message or redirect
+      alert("Withdrawal successful! Funds will be transferred to your bank account.")
     }, 2000)
   }
+
+  // Create Self app for verification
+  const selfApp = new SelfAppBuilder({
+    appName: "Playroom Withdraw",
+    scope: "playroom-withdraw",
+    endpoint: "https://d4a2-111-235-226-130.ngrok-free.app/api/verifyself/",
+    logoBase64: "https://pluspng.com/img-png/images-owls-png-hd-owl-free-download-png-png-image-485.png",
+    userId: userId,
+    disclosures: {
+      minimumAge: 18,
+      ofac: true,
+      excludedCountries: [countries.FRANCE],
+      name: true,
+    },
+  }).build()
+
+  const universalLink = getUniversalLink(selfApp)
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -142,9 +179,44 @@ export default function TasksPage() {
         </div>
       </div>
 
+      {/* Age Verification Modal */}
+      {showVerification && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-primary">Age Verification</h2>
+              <button onClick={() => setShowVerification(false)} className="p-1 rounded-full hover:bg-gray-100">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-sm mb-4">Please verify you are 18 or older to withdraw funds to your bank account.</p>
+
+            <div className="flex flex-col items-center">
+              <div className="bg-gray-100 p-4 rounded-xl mb-4">
+                <SelfQRcodeWrapper selfApp={selfApp} onSuccess={handleVerificationSuccess} />
+              </div>
+
+              <Button
+                onClick={() => {
+                  window.open(universalLink, "_blank")
+                }}
+                className="w-full rounded-full bg-primary"
+              >
+                Open Self App
+              </Button>
+
+              <p className="text-xs text-center mt-3 text-gray-500">
+                Scan with your Self app or click the button above to verify your identity.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Happy Bear Animation (visible when claiming rewards or completing tasks) */}
       {bearMood === "happy" && (
-        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
+        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-40">
           <div className="bear-happy">
             <Image src="/images/happy-bear.png" alt="Happy bear" width={150} height={150} className="opacity-90" />
           </div>
@@ -166,4 +238,3 @@ export default function TasksPage() {
     </div>
   )
 }
-
